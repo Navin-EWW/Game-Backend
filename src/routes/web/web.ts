@@ -4,6 +4,7 @@ const router = Router();
 
 /* GET home page. */
 router.get("/", function (req: Request, res: Response, next: NextFunction) {
+  console.log("nextweb")
   res.render("welcome", { title: "Express" });
 });
 
