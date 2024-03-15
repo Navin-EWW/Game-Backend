@@ -1,0 +1,13 @@
+import { {{Model}} } from "@prisma/client";
+
+export const {{actualName}} = (data: {{Model}}[] | {{Model}}) => {
+  if (Array.isArray(data)) {
+    return data.map((d) => objectResponse(d));
+  }
+
+  return objectResponse(data);
+};
+
+const objectResponse = (data: {{Model}}) => {
+  return data;
+};

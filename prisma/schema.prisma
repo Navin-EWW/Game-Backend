@@ -1,0 +1,614 @@
+// This is your Prisma schema file,
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
+  firstName           String
+  lastName            String
+  email               String    @unique
+  profilePic          String
+  password            String
+  forgotPasswordToken String?
+  status              Status    @default(ACTIVE)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime?
+
+  devices Device[]
+
+  @@map("admins")
+}
+
+model User {
+  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
+  firstName           String
+  lastName            String
+  email               String    @unique
+  phoneNumber         String
+  profilePic          String?
+  dateOfBirth         DateTime
+  phoneCode           String
+  displayPhoneNumber  String
+  password            String
+  countryId           String    @db.ObjectId
+  forgotPasswordToken String?
+  status              Status    @default(ACTIVE)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime?
+
+  devices                   Device[]
+  PromoCode                 PromoCode[]
+  Country                   Country?                    @relation(fields: [countryId], references: [id])
+  Games                     Games[]
+  GameCatgoryList           GameCatgoryList[]
+  GameQuestionList          GameQuestionList[]
+  GamePackagePaymentHistory GamePackagePaymentHistory[]
+  SpeicalGames              SpeicalGames[]
+  SpeicalGameCatgoryList    SpeicalGameCatgoryList[]
+  SpecialGameQuestionList   SpecialGameQuestionList[]
+
+  @@map("users")
+}
+
+model GamePackages {
+  id                        String                      @id @default(auto()) @map("_id") @db.ObjectId
+  title                     String
+  discription               String?
+  totalGame                 String
+  discount                  String?
+  price                     String
+  discountedPrice           String?
+  image                     String?
+  status                    Status                      @default(ACTIVE)
+  createdAt                 DateTime                    @default(now())
+  updatedAt                 DateTime                    @updatedAt
+  deletedAt                 DateTime?
+  GamePackagePaymentHistory GamePackagePaymentHistory[]
+
+  @@map("game_packages")
+}
+
+model GamePackagePaymentHistory {
+  id                    String    @id @default(auto()) @map("_id") @db.ObjectId
+  packageId             String    @db.ObjectId
+  userId                String    @db.ObjectId
+  title                 String
+  discription           String?
+  totalGame             String
+  discount              String?
+  price                 String
+  image                 String?
+  payment_id            String?
+  result                String?   @default("PENDING")
+  post_date             String?
+  tran_id               String?
+  ref                   String?
+  track_id              String?
+  auth                  String?
+  order_id              String?
+  requested_order_id    String?
+  system_transaction_id String    @unique // do not share to public access
+  refund_order_id       String?
+  invoice_id            String?
+  payment_type          String?
+  transaction_date      DateTime?
+  receipt_id            String?
+  trn_udf               String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  deletedAt             DateTime?
+
+  Package GamePackages? @relation(fields: [packageId], references: [id])
+  User    User?         @relation(fields: [userId], references: [id])
+
+  @@map("game_packages_payment_history")
+}
+
+model ContactUs {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  email       String?
+  phoneNumber String?
+  discription String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@map("contact_us")
+}
+
+model Device {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String    @db.ObjectId
+  fcmToken  String?
+  userType  String
+  authToken String    @unique
+  device    Devices
+  metaData  Json?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  User  User?  @relation(fields: [userId], references: [id])
+  Admin Admin? @relation(fields: [userId], references: [id])
+
+  @@map("devices")
+}
+
+model Blogs {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  slug        String
+  image       String
+  description String
+  status      Status    @default(ACTIVE)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@map("blogs")
+}
+
+model PolicyPage {
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  type        PolicyPageTypes
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  deletedAt   DateTime?
+
+  @@map("policy_pages")
+}
+
+model GamesCategory {
+  id               String             @id @default(auto()) @map("_id") @db.ObjectId
+  name             String
+  coverImage       String
+  description      String
+  status           Status             @default(ACTIVE)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  deletedAt        DateTime?
+  GamesQuestion    GamesQuestion[]
+  Games            Games[]
+  GameCatgoryList  GameCatgoryList[]
+  GameQuestionList GameQuestionList[]
+
+  @@map("games_categories")
+}
+
+model GamesQuestion {
+  id                 String           @id @default(auto()) @map("_id") @db.ObjectId
+  categoryId         String           @db.ObjectId
+  question           String
+  questionTypeView   questionTypeView @default(Regular_Question)
+  correctAnswer      String?
+  correctAnswerMedia String?
+  layoutTepmplate    Int
+  class              Class
+  image              String[]
+  video              String[]
+  audio              String[]
+  status             Status           @default(ACTIVE)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  deletedAt          DateTime?
+
+  GameCategory     GamesCategory?     @relation(fields: [categoryId], references: [id])
+  GameQuestionList GameQuestionList[]
+
+  @@map("games_questions")
+}
+
+model SpecialGamesCategory {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  coverImage  String
+  description String
+  amount      String
+  status      Status    @default(ACTIVE)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  SpecialGamesQuestion    SpecialGamesQuestion[]
+  SpeicalGames            SpeicalGames[]
+  SpeicalGameCatgoryList  SpeicalGameCatgoryList[]
+  SpecialGameQuestionList SpecialGameQuestionList[]
+
+  @@map("special_games_categories")
+}
+
+model SpecialGamesQuestion {
+  id                 String           @id @default(auto()) @map("_id") @db.ObjectId
+  question           String
+  questionTypeView   questionTypeView
+  correctAnswer      String?
+  correctAnswerMedia String?
+  layoutTepmplate    Int
+  class              Class
+  image              String[]
+  video              String[]
+  audio              String[]
+  status             Status           @default(ACTIVE)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  deletedAt          DateTime?
+  categoryId         String           @db.ObjectId
+
+  SpecialGamesCategory    SpecialGamesCategory?     @relation(fields: [categoryId], references: [id])
+  SpecialGameQuestionList SpecialGameQuestionList[]
+
+  @@map("special_games_questions")
+}
+
+model PromoCode {
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  promoCode    String       @unique
+  validFrom    DateTime
+  validTill    DateTime
+  discount     String
+  discountType DiscountType
+  userId       String?      @db.ObjectId
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  deletedAt    DateTime?
+
+  User User? @relation(fields: [userId], references: [id])
+
+  @@map("promo_codes")
+}
+
+model Games {
+  id              String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String      @db.ObjectId
+  gameName        String
+  teamOneName     String
+  teamTwoName     String
+  teamOnePlayers  Int
+  teamTwoPlayers  Int
+  totalCategories Int
+  categoriesId    String[]    @db.ObjectId
+  gameStatus      GameStatus  @default(START)
+  firstTurn       Team        @default(TeamOne)
+  currentQuestion Int         @default(0)
+  currentTurn     Team        @default(TeamOne)
+  teamOnePoints   Int         @default(0)
+  teamTwoPoints   Int         @default(0)
+  winnerTeam      TeamWinner?
+
+  teamOneFlipLifeline Boolean @default(false)
+  teamOneX2Lifeline   Boolean @default(false)
+  teamOneCallLifeline Boolean @default(false)
+  teamTwoFlipLifeline Boolean @default(false)
+  teamTwoX2Lifeline   Boolean @default(false)
+  teamTwoCallLifeline Boolean @default(false)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  User             User               @relation(fields: [userId], references: [id])
+  GamesCategory    GamesCategory      @relation(fields: [categoriesId], references: [id])
+  GameCatgoryList  GameCatgoryList[]
+  GameQuestionList GameQuestionList[]
+
+  @@map("games")
+}
+
+model GameCatgoryList {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String @db.ObjectId
+  gameId     String @db.ObjectId
+  categoryId String @db.ObjectId
+
+  TeamOneclass200Available              Boolean @default(true)
+  TeamOneclass400Available              Boolean @default(true)
+  TeamOneclass600Available              Boolean @default(true)
+  TeamOneclass200RemainingQuestionCount Int
+  TeamOneclass400RemainingQuestionCount Int
+  TeamOneclass600RemainingQuestionCount Int
+  TeamOneclass200QuestionCount          Int
+  TeamOneclass400QuestionCount          Int
+  TeamOneclass600QuestionCount          Int
+
+  TeamTwoclass200Available              Boolean @default(true)
+  TeamTwoclass400Available              Boolean @default(true)
+  TeamTwoclass600Available              Boolean @default(true)
+  TeamTwoclass200RemainingQuestionCount Int
+  TeamTwoclass400RemainingQuestionCount Int
+  TeamTwoclass600RemainingQuestionCount Int
+  TeamTwoclass200QuestionCount          Int
+  TeamTwoclass400QuestionCount          Int
+  TeamTwoclass600QuestionCount          Int
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  User          User          @relation(fields: [userId], references: [id])
+  Games         Games         @relation(fields: [gameId], references: [id])
+  GamesCategory GamesCategory @relation(fields: [categoryId], references: [id])
+
+  @@map("games_category_list")
+}
+
+model GameQuestionList {
+  id                     String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId                 String           @db.ObjectId
+  gameId                 String           @db.ObjectId
+  categoryId             String           @db.ObjectId
+  class                  Class
+  // teamOneClass           Class
+  // teamTwoClass           Class
+  rightAnswerGivenByTeam AnserGiveByTeam?
+  points                 Int              @default(0)
+  questionId             String           @db.ObjectId
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+  deletedAt              DateTime?
+
+  User          User          @relation(fields: [userId], references: [id])
+  Games         Games         @relation(fields: [gameId], references: [id])
+  GamesCategory GamesCategory @relation(fields: [categoryId], references: [id])
+  GamesQuestion GamesQuestion @relation(fields: [questionId], references: [id])
+
+  @@map("game_question_list")
+}
+
+model SpeicalGames {
+  id              String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String      @db.ObjectId
+  gameName        String
+  teamOneName     String
+  teamTwoName     String
+  teamOnePlayers  Int
+  teamTwoPlayers  Int
+  totalCategories Int
+  categoryId      String      @db.ObjectId
+  gameStatus      GameStatus  @default(START)
+  firstTurn       Team        @default(TeamOne)
+  currentQuestion Int         @default(0)
+  currentTurn     Team        @default(TeamOne)
+  teamOnePoints   Int         @default(0)
+  teamTwoPoints   Int         @default(0)
+  winnerTeam      TeamWinner?
+
+  teamOneFlipLifeline Boolean @default(false)
+  teamOneX2Lifeline   Boolean @default(false)
+  teamOneCallLifeline Boolean @default(false)
+  teamTwoFlipLifeline Boolean @default(false)
+  teamTwoX2Lifeline   Boolean @default(false)
+  teamTwoCallLifeline Boolean @default(false)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  User                    User                      @relation(fields: [userId], references: [id])
+  SpecialGamesCategory    SpecialGamesCategory      @relation(fields: [categoryId], references: [id])
+  SpeicalGameCatgoryList  SpeicalGameCatgoryList[]
+  SpecialGameQuestionList SpecialGameQuestionList[]
+
+  @@map("speical_games")
+}
+
+model SpeicalGameCatgoryList {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String @db.ObjectId
+  gameId     String @db.ObjectId
+  categoryId String @db.ObjectId
+
+  TeamOneclass200Available              Boolean @default(true)
+  TeamOneclass400Available              Boolean @default(true)
+  TeamOneclass600Available              Boolean @default(true)
+  TeamOneclass200RemainingQuestionCount Int
+  TeamOneclass400RemainingQuestionCount Int
+  TeamOneclass600RemainingQuestionCount Int
+  TeamOneclass200QuestionCount          Int
+  TeamOneclass400QuestionCount          Int
+  TeamOneclass600QuestionCount          Int
+
+  TeamTwoclass200Available              Boolean @default(true)
+  TeamTwoclass400Available              Boolean @default(true)
+  TeamTwoclass600Available              Boolean @default(true)
+  TeamTwoclass200RemainingQuestionCount Int
+  TeamTwoclass400RemainingQuestionCount Int
+  TeamTwoclass600RemainingQuestionCount Int
+  TeamTwoclass200QuestionCount          Int
+  TeamTwoclass400QuestionCount          Int
+  TeamTwoclass600QuestionCount          Int
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  User                 User                 @relation(fields: [userId], references: [id])
+  SpeicalGames         SpeicalGames         @relation(fields: [gameId], references: [id])
+  SpecialGamesCategory SpecialGamesCategory @relation(fields: [categoryId], references: [id])
+
+  @@map("speical_games_category_list")
+}
+
+model SpecialGameQuestionList {
+  id                     String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId                 String           @db.ObjectId
+  gameId                 String           @db.ObjectId
+  categoryId             String           @db.ObjectId
+  class                  Class
+  rightAnswerGivenByTeam AnserGiveByTeam?
+  points                 Int              @default(0)
+  questionId             String           @db.ObjectId
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+  deletedAt              DateTime?
+
+  User                 User                 @relation(fields: [userId], references: [id])
+  SpeicalGames         SpeicalGames         @relation(fields: [gameId], references: [id])
+  SpecialGamesCategory SpecialGamesCategory @relation(fields: [categoryId], references: [id])
+  SpecialGamesQuestion SpecialGamesQuestion @relation(fields: [questionId], references: [id])
+
+  @@map("special_game_question_list")
+}
+
+model Country {
+  id             String     @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  iso3           String
+  iso2           String
+  numericCode    String
+  phoneCode      String
+  capital        String
+  currency       String
+  currencyName   String
+  currencySymbol String
+  native         String
+  region         String
+  subregion      String
+  latitude       String
+  longitude      String
+  Province       Province[]
+  User           User[]
+
+  @@map("countries")
+}
+
+model Province {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  countryId    String @db.ObjectId
+  provinceCode String
+  latitude     String
+  longitude    String
+
+  country Country @relation(fields: [countryId], references: [id])
+  cities  City[]
+
+  @@map("provinces")
+}
+
+model City {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  provinceId String   @db.ObjectId
+  latitude   String
+  longitude  String
+  Province   Province @relation(fields: [provinceId], references: [id])
+
+  @@map("cities")
+}
+
+model Sponsor {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  url       String
+  image     String
+  status    Status    @default(ACTIVE)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("sponsors")
+}
+
+model AppSetting {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  label       String
+  version     String
+  showLogin      Boolean   @default(false)
+  // forceUpdate Boolean   @default(false)
+  // maintenance Boolean   @default(false)
+  deviceType  Devices
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@map("app_settings")
+}
+
+enum GameStatus {
+  START
+  PENDING
+  FINISHED
+}
+
+enum TeamWinner {
+  TeamOne
+  TeamTwo
+  Tie
+}
+
+enum Team {
+  TeamOne
+  TeamTwo
+}
+
+enum AnserGiveByTeam {
+  TeamOne
+  TeamTwo
+  NoOne
+}
+
+enum GamelifelineType {
+  X2
+  Call
+  Flip
+}
+
+enum QuestionType {
+  Audio
+  Video
+  Image
+  Textual
+}
+
+enum questionTypeView {
+  Regular_Question
+  Focus_Before_The_Question
+}
+
+enum Class {
+  CLASS_200
+  CLASS_400
+  CLASS_600
+}
+
+enum Devices {
+  IOS
+  ANDROID
+  WEB
+}
+
+enum DiscountType {
+  AMOUNT
+  PERCENTAGE
+}
+
+enum PolicyPageTypes {
+  AboutUs
+  TermAndCondition
+  PrivacyPolicy
+}
+
+enum NotificationTypes {
+  LoggedOut
+}
+
+enum SocialTypes {
+  GOOGLE
+  APPLE
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
